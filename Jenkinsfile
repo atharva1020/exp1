@@ -2,59 +2,67 @@ pipeline {
     agent any
 
     environment {
-        // Python version or virtual environment name
         VENV = 'venv'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Clone') {
             steps {
-                // Clone your GitHub repo (replace with your repo URL)
-                git 'https://github.com/atharva1020/exp1/edit/v1/Jenkinsfile'
+                // Clone private repo using Jenkins credentials (replace with your URL & credentialsId)
+                git(
+                    url: 'https://github.com/atharva1020/exp1.git',
+                    credentialsId: 'atharva1020'  // Use the ID of your Jenkins GitHub credential here
+                )
             }
         }
 
-        stage('Setup Python Environment') {
+        stage('Build') {
             steps {
                 script {
-                    // Create a virtual environment
+                    // Setup virtual environment and install dependencies
                     sh 'python3 -m venv ${VENV}'
+                    sh '''
+                        source ${VENV}/bin/activate
+                        pip install --upgrade pip
+                        pip install -r requirements.txt
+                    '''
                 }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Deploy') {
             steps {
-                // Install required packages from requirements.txt
-                sh '''
-                    source ${VENV}/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                '''
+                script {
+                    // Example deploy commands - customize this!
+                    echo 'Deploying application...'
+                    // e.g. sh 'scp -r ./app user@server:/path/to/deploy'
+                }
             }
         }
 
-        stage('Run Project / Tests') {
+        stage('Test') {
             steps {
-                // Example: run tests with pytest
-                sh '''
-                    source ${VENV}/bin/activate
-                    pytest
-                '''
+                script {
+                    // Run tests inside virtual environment
+                    sh '''
+                        source ${VENV}/bin/activate
+                        pytest
+                    '''
+                }
             }
         }
     }
 
     post {
         always {
-            // Clean up virtual environment if needed
+            // Clean up virtual environment after run
             sh 'rm -rf ${VENV}'
         }
         success {
-            echo 'Build succeeded!'
+            echo 'Pipeline succeeded!'
         }
         failure {
-            echo 'Build failed.'
+            echo 'Pipeline failed!'
         }
     }
 }
