@@ -9,7 +9,7 @@ pipeline {
         stage('Clone') {
             steps {
                echo 'cloning repository from github...'
-                checkout scm
+               checkout scm
                 )
             }
         }
