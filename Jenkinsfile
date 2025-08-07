@@ -10,7 +10,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Clone your GitHub repo (replace with your repo URL)
-                git 'https://github.com/yourusername/your-python-project.git'
+                git 'https://github.com/atharva1020/exp1/edit/v1/Jenkinsfile'
             }
         }
 
