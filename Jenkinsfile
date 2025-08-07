@@ -2,27 +2,44 @@ pipeline {
     agent any
 
     environment {
-        VENV = 'venv'
+        PYTHON_VENV = "python-venv"
     }
 
     stages {
         stage('Clone') {
             steps {
-               echo 'cloning repository from github...'
-               checkout scm
-                )
+                script {
+                    echo 'Cloning repository from GitHub...'
+                    checkout scm
+                }
             }
         }
 
         stage('Build') {
             steps {
                 script {
-                    // Setup virtual environment and install dependencies
-                    sh 'python3 -m venv ${VENV}'
+                    echo 'Setting up Python environment...'
+
+                    // Check if python3-venv is installed, if not, skip it
                     sh '''
-                        source ${VENV}/bin/activate
-                        pip install --upgrade pip
-                        pip install -r requirements.txt
+                    dpkg -l | grep -q python3-venv || echo "python3-venv is already installed"
+                    '''
+                   
+                    // Create a virtual environment and activate it using bash
+                    sh '''
+                    python3 -m venv ${PYTHON_VENV}
+                    bash -c "source ${PYTHON_VENV}/bin/activate && pip install --upgrade pip && pip install -r requirements.txt"
+                    '''
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    echo 'Running tests...'
+                    sh '''
+                    bash -c "source ${PYTHON_VENV}/bin/activate && pytest --maxfail=1 --disable-warnings -q"
                     '''
                 }
             }
@@ -31,21 +48,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Example deploy commands - customize this!
                     echo 'Deploying application...'
-                    // e.g. sh 'scp -r ./app user@server:/path/to/deploy'
-                }
-            }
-        }
-
-        stage('Test') {
-            steps {
-                script {
-                    // Run tests inside virtual environment
-                    sh '''
-                        source ${VENV}/bin/activate
-                        pytest
-                    '''
+                    echo "Deployment commands go here"
                 }
             }
         }
@@ -53,14 +57,14 @@ pipeline {
 
     post {
         always {
-            // Clean up virtual environment after run
-            sh 'rm -rf ${VENV}'
+            echo 'Cleaning up...'
+            sh "rm -rf ${PYTHON_VENV}"
         }
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Pipeline completed successfully.'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed. Check the logs for details.'
         }
     }
 }
