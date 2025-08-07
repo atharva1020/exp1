@@ -8,10 +8,7 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
-                // Clone private repo using Jenkins credentials (replace with your URL & credentialsId)
-                git(
-                    url: 'https://github.com/atharva1020/exp1.git',
-                    credentialsId: 'atharva1020/******'  // Use the ID of your Jenkins GitHub credential here
+               echo 'cloning repository from github...'
                 )
             }
         }
