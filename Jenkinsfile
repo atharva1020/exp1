@@ -1,32 +1,60 @@
 pipeline {
     agent any
 
+    environment {
+        // Python version or virtual environment name
+        VENV = 'venv'
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                git credentialsId: 'github-creds', url: 'https://github.com/your-username/your-repo.git'
+                // Clone your GitHub repo (replace with your repo URL)
+                git 'https://github.com/yourusername/your-python-project.git'
             }
         }
 
-        stage('Build') {
+        stage('Setup Python Environment') {
             steps {
-                echo "Building the application..."
-                // Add your build steps here
+                script {
+                    // Create a virtual environment
+                    sh 'python3 -m venv ${VENV}'
+                }
             }
         }
 
-        stage('Test') {
+        stage('Install Dependencies') {
             steps {
-                echo "Running tests..."
-                // Add test commands
+                // Install required packages from requirements.txt
+                sh '''
+                    source ${VENV}/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
             }
         }
 
-        stage('Deploy') {
+        stage('Run Project / Tests') {
             steps {
-                echo "Deploying application..."
-                // Add deployment commands
+                // Example: run tests with pytest
+                sh '''
+                    source ${VENV}/bin/activate
+                    pytest
+                '''
             }
+        }
+    }
+
+    post {
+        always {
+            // Clean up virtual environment if needed
+            sh 'rm -rf ${VENV}'
+        }
+        success {
+            echo 'Build succeeded!'
+        }
+        failure {
+            echo 'Build failed.'
         }
     }
 }
